@@ -1,0 +1,28 @@
+use * from cwio
+use utime
+use Pin from machine
+use sys
+use os
+
+init!
+
+screen.on!
+screen.init!
+keyboard.init!
+
+=== keyboard.wait_for(KEYBOARD.KEYS.EXE)
+
+=== screen.clear_raw!
+
+keyboard.wait_for(KEYBOARD.KEYS.EXE)
+
+for i -> [16<->48]
+    screen.set(i, i, SCR.ENUM.PIXEL.BLACK)
+.
+
+screen.write_char(0 , 0, "A", SCR.ENUM.PIXEL.BLACK , font.vcr_osd_mono)
+screen.write_char(12, 0, "A", SCR.ENUM.PIXEL.DARK  , font.vcr_osd_mono)
+screen.write_char(24, 0, "A", SCR.ENUM.PIXEL.BRIGHT, font.vcr_osd_mono)
+screen.write_char(36, 0, "A", SCR.ENUM.PIXEL.WHITE , font.vcr_osd_mono)
+
+screen.apply!
