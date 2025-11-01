@@ -18,6 +18,6 @@ for i -> [16<->48]
     screen.set(i, i, SCR.ENUM.PIXEL.BLACK)
 .
 
-screen.write("HELLO WORLD", 0, 0 , SCR.ENUM.PIXEL.BLACK , font.miniwi)
+screen.write("HELLO WORLD", 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
 
 screen.apply!
