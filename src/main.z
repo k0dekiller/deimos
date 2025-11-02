@@ -13,9 +13,6 @@ use apps
 
 class DebugInterrupt from Exception;;.
 
-=== debug sleep
-utime.sleep(2)
-
 init!
 
 screen.on!
