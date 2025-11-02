@@ -15,6 +15,14 @@ class Label from Widget
     .
 .
 
+class Image from Widget
+    /* ^x, ^y, @img, @color;;.
+
+    /render ox: int, oy: int
+        screen.image(@.img, @.x+ox, @.y+oy, @.color)
+    .
+.
+
 class SizableWidget
     /* ^x, ^y, @w, @h;;.
 .
