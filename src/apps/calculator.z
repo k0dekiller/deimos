@@ -10,7 +10,7 @@ def main
     ans = 0
     while True
         screen.clear!
-        screen.write(buf, 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+        screen.write(buf..("=" if get else "|"), 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
         if get
             get = False
             try
