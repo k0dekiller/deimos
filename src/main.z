@@ -9,6 +9,7 @@ use os
 use ui
 use choose from ui
 use res
+use apps
 
 class DebugInterrupt from Exception;;.
 
@@ -24,7 +25,14 @@ keyboard.init!
 scr = ui.Screen!
 
 scr \
-    + (img1 := ui.Image(20, 20, res.img.changed, SCR.ENUM.PIXEL.BLACK))
+    + (title    := ui.Label(0, 0, "Welcome to Desmos", SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)) \
+    + (desc     := ui.Label(0, 14, \
+        "This OS is built on PicoEASE, a library that's\n"+\
+        "used to access the calculator's debug interface.\n"+\
+        "This allows the pico to access internal memory\n"+\
+        "addresses that are mapped to external devices\n"+\
+        "like the screen and the keyboard.", \
+    SCR.ENUM.PIXEL.BLACK, font.miniwi))
 
 try
     while True
@@ -48,6 +56,8 @@ try
                 screen.apply!
                 raise DebugInterrupt("Returning to REPL")
             .
+        .elif key == KEYBOARD.KEYS.HOME
+
         .
     .
 .catch DebugInterrupt = e
