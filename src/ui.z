@@ -8,14 +8,14 @@ def choose(items: list(str)): int
     f = font.miniwi
     h = f!.h
     for item at i -> items
-        screen.write(item, x+2, (y+(h+1)*i)+1, SCR.ENUM.PIXEL.BLACK, f)
+        screen.write(item, x+2, (y+(h+2)*i)+1, SCR.ENUM.PIXEL.BLACK, f)
     .
     oldsel = None
     sel = 0
     while True
         for item at i -> items
             if i == sel or i == oldsel
-                screen.box(x, y+(h+1)*i, SCR.WIDTH, h+1, (SCR.ENUM.PIXEL.BLACK if i == sel else SCR.ENUM.PIXEL.WHITE))
+                screen.box(x, y+(h+2)*i, SCR.WIDTH, h+2, (SCR.ENUM.PIXEL.BLACK if i == sel else SCR.ENUM.PIXEL.WHITE))
             .
         .
         screen.apply!
