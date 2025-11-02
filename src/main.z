@@ -7,10 +7,6 @@ use sys
 use os
 use ui
 
-def menu(x: int, y: int, items: list(str), sel: int, font: Font = font.miniwi): None
-    
-.
-
 def choose(items: list(str)): int
     x = 0
     y = 0
