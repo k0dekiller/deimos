@@ -1,0 +1,8 @@
+use * from cwio
+use * from cwio.const
+
+name = "Tetris"
+
+def main
+    
+.

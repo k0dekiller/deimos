@@ -1,5 +1,7 @@
 use .calculator
+use .tetris
 
 all = [
-    calculator
+    calculator,
+    tetris,
 ]
