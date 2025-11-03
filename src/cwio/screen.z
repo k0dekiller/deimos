@@ -12,7 +12,7 @@ def on: None
 
 def init: None
     calc.write(SCR.MODE, SCR.ENUM.MODE.BUFFER | SCR.ENUM.MODE.ALL | SCR.ENUM.MODE.FLIP_X | SCR.ENUM.MODE.COLOR)
-    calc.write(SCR.CONTRAST, 0x13)
+    calc.write(SCR.CONTRAST, 0x12)
     utime.sleep_ms(2)
 .
 
