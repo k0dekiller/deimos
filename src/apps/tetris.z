@@ -1,8 +1,257 @@
 use * from cwio
 use * from cwio.const
+use MonoImage from cwio.screen
+use randint from random
 
 name = "Tetris"
 
+def empty_line
+    l = [,]
+    for x -> {->10}
+        {l}<-0
+    .
+    <-l
+.
+
+def empty
+    l = [,]
+    for y -> {->21}
+        {l}<-empty_line!
+    .
+    <-l
+.
+
+def is_line_empty(l: list(int))
+    for block -> l
+        if block; <-False;.
+    .
+    <-True
+.
+
+def is_column_empty(l: list(list(int)), x: int)
+    for y -> {->#l}
+        if l[y][x]; <-False;.
+    .
+    <-True
+.
+
+def stack_top(l: list(list(int)))
+    for y -> {#l<->0,-1}
+        if not is_line_empty(l[y]); <-y;.
+    .
+    <-None
+.
+
+def last_used_line(l: list(list(int)))
+    empty = True
+    for y -> {->#l}
+        if empty and (not is_line_empty(l[y])); empty = False;.
+        if (not empty) and is_line_empty(l[y]); <-y;.
+    .
+    <-None
+.
+
+def get_collision_points(l: list(list(int)))
+    p = [,]
+    for x -> {->#(l[0])}
+        for y -> {#l<->0,-1}
+            if y > 0 and l[y-1][x]
+                {p}<-[x, y]
+                break
+            .
+        .
+    .
+    <-p
+.
+
+def collides(l: list(list(int)), p: list(tuple(int)))
+    for x, y -> p
+        if l[y][x]; <-True;.
+    .
+    <-False
+.
+
+def shift_left_if_possible(l: list(list(int)))
+    if not is_column_empty(l, 0); <-False;.
+    for y -> {->#l}
+        del l[y][0]
+        {l[y]}<-0
+    .
+    <-True
+.
+
+def shift_right_if_possible(l: list(list(int)))
+    if not is_column_empty(l, -1); <-False;.
+    for y -> {->#l}
+        del l[y][-1]
+        {l[y]:0}<-0
+    .
+    <-True
+.
+
+def rotate_clockwise_if_possible(l: list(list(int)), c: tuple(int, int), s: int)
+    if s == 1
+        === edges
+        p                 = l[c[1]-1][c[0]  ]
+        l[c[1]-1][c[0]  ] = l[c[1]  ][c[0]-1]
+        l[c[1]  ][c[0]-1] = l[c[1]+1][c[0]  ]
+        l[c[1]+1][c[0]  ] = l[c[1]  ][c[0]+1]
+        l[c[1]  ][c[0]+1] = p
+
+        === corners
+        p                 = l[c[1]-1][c[0]+1]
+        l[c[1]-1][c[0]+1] = l[c[1]-1][c[0]-1]
+        l[c[1]-1][c[0]-1] = l[c[1]+1][c[0]-1]
+        l[c[1]+1][c[0]-1] = l[c[1]+1][c[0]+1]
+        l[c[1]+1][c[0]+1] = p
+    .elif s == 2
+        === center
+        p                 = l[c[1]-1][c[0]  ]
+        l[c[1]-1][c[0]  ] = l[c[1]-1][c[0]-1]
+        l[c[1]-1][c[0]-1] = l[c[1]  ][c[0]-1]
+        l[c[1]  ][c[0]-1] = l[c[1]  ][c[0]  ]
+        l[c[1]  ][c[0]  ] = p
+
+        === corners
+        p                 = l[c[1]-2][c[0]+1]
+        l[c[1]-2][c[0]+1] = l[c[1]-2][c[0]-2]
+        l[c[1]-2][c[0]-2] = l[c[1]+1][c[0]-2]
+        l[c[1]+1][c[0]-2] = l[c[1]+1][c[0]+1]
+        l[c[1]+1][c[0]+1] = p
+
+        === corners - 1
+        p                 = l[c[1]-2][c[0]  ]
+        l[c[1]-2][c[0]  ] = l[c[1]-1][c[0]-2]
+        l[c[1]-1][c[0]-2] = l[c[1]+1][c[0]-1]
+        l[c[1]+1][c[0]-1] = l[c[1]  ][c[0]+1]
+        l[c[1]  ][c[0]+1] = p
+
+        === corners - 2
+        p                 = l[c[1]-2][c[0]-1]
+        l[c[1]-2][c[0]-1] = l[c[1]  ][c[0]-2]
+        l[c[1]  ][c[0]-2] = l[c[1]+1][c[0]  ]
+        l[c[1]+1][c[0]  ] = l[c[1]-1][c[0]+1]
+        l[c[1]-1][c[0]+1] = p
+    .
+.
+
+def bitwise_or(target: list(list(int)), source: list(list(int)))
+    for line at y -> source
+        for block at x -> line
+            target[y][x] |= block
+        .
+    .
+.
+
+def draw(board: list(list(int)), x: int, y: int, color: int, back: int | None = None)
+    s = 3
+    if back != None; screen.rect(x, y, #(board[0])*s, #board*s, back);.
+    for line at oy -> board
+        for block at ox -> line
+            if block; screen.rect(x+ox*s, y+oy*s, s, s, color);.
+        .
+    .
+.
+
 def main
-    
+    buf = empty!
+    sel = empty!
+    curr = False
+    piece = None
+    center = None
+    size = None
+    frame = 0
+
+    while True
+        frame += 1
+        if not curr
+            piece = randint(0, 6)
+            if piece == 0
+                size = 2
+                center = [5, 2,]
+                sel[1][3] = 1
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[1][6] = 1
+            .elif piece == 1
+                size = 2
+                center = [5, 2,]
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[2][4] = 1
+                sel[2][5] = 1
+            .elif piece == 2
+                size = 1
+                center = [5, 1,]
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[1][6] = 1
+                sel[2][5] = 1
+            .elif piece == 3
+                size = 1
+                center = [5, 1,]
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[1][6] = 1
+                sel[2][6] = 1
+            .elif piece == 4
+                size = 1
+                center = [5, 1,]
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[1][6] = 1
+                sel[2][4] = 1
+            .elif piece == 5
+                size = 1
+                center = [5, 1,]
+                sel[1][5] = 1
+                sel[1][6] = 1
+                sel[2][4] = 1
+                sel[2][5] = 1
+            .elif piece == 6
+                size = 1
+                center = [5, 1,]
+                sel[1][4] = 1
+                sel[1][5] = 1
+                sel[2][5] = 1
+                sel[2][6] = 1
+            .
+            curr = True
+        .
+        if not frame % 1000
+            if last_used_line(sel) and (not collides(buf, get_collision_points(sel)))
+                {sel:0}<-empty_line!
+                del sel[-1]
+                center[1] += 1
+            .else
+                bitwise_or(buf, sel)
+                sel = empty!
+                curr = False
+            .
+        .
+
+        key = keyboard.get!
+        if key >= 0
+            if key == KEYBOARD.KEYS.LEFT
+                if shift_left_if_possible(sel)
+                    center[0] -= 1
+                .
+            .elif key == KEYBOARD.KEYS.RIGHT
+                if shift_right_if_possible(sel)
+                    center[0] += 1
+                .
+            .elif key == KEYBOARD.KEYS.OK
+                rotate_clockwise_if_possible(sel, center, size)
+            .elif key == KEYBOARD.KEYS.HOME
+                break
+            .
+        .
+
+        draw(buf, 0, 0, SCR.ENUM.PIXEL.DARK, SCR.ENUM.PIXEL.WHITE)
+        draw(sel, 0, 0, SCR.ENUM.PIXEL.BLACK)
+        screen.write(frame as str, 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+        screen.apply!
+
+        if not is_line_empty(buf[1]); break;.
+    .
 .
