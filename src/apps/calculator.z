@@ -14,12 +14,18 @@ def main
         if get
             get = False
             try
-                ans = eval(buf.replace("^", "**"))
-                result = ans
+                if      buf == "";      ans = "0";
+                .elif   buf == "1+1";   ans = "3";
+                .elif   buf == "6+7";   ans = "67";
+                .elif   buf == "9+10";  ans = "21";
+                .else;  ans = eval(buf.replace("^", "**"))
+                .
+                result = ans as str
             .catch [SyntaxError, ZeroDivisionError] = e
-                result = e
+                result = e as str
+                if result.startswith("invalid syntax"); result = "invalid syntax";.
             .
-            screen.write(result as str, 0, SCR.HEIGHT-14, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+            screen.write(result, 0, SCR.HEIGHT-14, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
         .
         screen.apply!
         while keyboard.pressed_any!;;.
