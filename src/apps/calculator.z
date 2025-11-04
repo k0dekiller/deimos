@@ -73,30 +73,40 @@ class func
     def acos(a: int | float); <-math.acos(math.radians(a));.
     @reprover("tan\uE011")
     def atan(a: int | float); <-math.atan(math.radians(a));.
+    @reprover("\u221A")
+    def sqrt(a: int | float); <-math.sqrt(a);.
 .
 
 replaces = [
-    "^"    = ["^", "**"],
     "\x01" = ["sin",        "func.sin"  ],
     "\x02" = ["sin\uE011",  "func.asin" ],
     "\x03" = ["cos",        "func.cos"  ],
     "\x04" = ["cos\uE011",  "func.acos" ],
     "\x05" = ["tan",        "func.tan"  ],
-    "\x06" = ["tan\uE011",  "func.atan" ]
+    "\x06" = ["tan\uE011",  "func.atan" ],
+    "\x07" = ["\u221A",     "func.sqrt" ],
+    "^"    = ["^",          "**"        ]
 ]
 
 def main
     buf = ""
+    pos = 0
     get = False
     shift = False
     ans = 0
     while True
         screen.clear!
-        toprint = buf
+        toprint1 = buf[:pos]
         for k, v -> replaces.items!
-            toprint .= replace(k, v[0])
+            toprint1 .= replace(k, v[0])
         .
-        screen.write(toprint..("=" if get else "|"), 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+        toprint2 = buf[pos:]
+        for k, v -> replaces.items!
+            toprint2 .= replace(k, v[0])
+        .
+        toprint = toprint1 + toprint2
+        screen.write(toprint..("=" if get else ""), 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+        screen.write("|", 11*#toprint1, 0, SCR.ENUM.PIXEL.DARK, font.classwiz_cw)
         if get
             get = False
             try
@@ -112,7 +122,7 @@ def main
                     for k, v -> replaces.items!
                         expr .= replace(k, v[1])
                     .
-                    <|expr
+                    <|"[EVAL] Parsing \""..expr.."\""
                     ans = eval(expr)
                 .
                 result = ans as str
@@ -127,7 +137,10 @@ def main
                 .else
                     raise e
                 .
+            .catch AttributeError
+                result = "invalid syntax"
             .
+            <|"[EVAL] Result: \""..result.."\""
             screen.write(result, 0, SCR.HEIGHT-14, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
             if result == "changed mode"
                 screen.image(res.img.changed, SCR.WIDTH-33, SCR.HEIGHT-32, SCR.ENUM.PIXEL.BLACK)
@@ -136,45 +149,76 @@ def main
         screen.apply!
         while keyboard.pressed_any!;;.
         key = keyboard.get_next!
-        if      key == KEYBOARD.KEYS.SHIFT      ; shift = not $;
+        chr = None
+        if          key == KEYBOARD.KEYS.SHIFT      ; shift = not $;
         .elif shift
             shift = False
-            if      key == KEYBOARD.KEYS.LPAREN     ; buf += "=";
-            .elif   key == KEYBOARD.KEYS.MULTIPLY   ; buf += "%";
-            .elif   key == KEYBOARD.KEYS.SIN        ; buf += "\x02";
-            .elif   key == KEYBOARD.KEYS.COS        ; buf += "\x04";
-            .elif   key == KEYBOARD.KEYS.TAN        ; buf += "\x06";
+            if      key == KEYBOARD.KEYS.LEFT
+                pos = 0
+            .elif   key == KEYBOARD.KEYS.RIGHT
+                pos = #buf
+            .elif   key == KEYBOARD.KEYS.LPAREN     ; chr = "=";
+            .elif   key == KEYBOARD.KEYS.MULTIPLY   ; chr = "%";
+            .elif   key == KEYBOARD.KEYS.SIN        ; chr = "\x02(";
+            .elif   key == KEYBOARD.KEYS.COS        ; chr = "\x04(";
+            .elif   key == KEYBOARD.KEYS.TAN        ; chr = "\x06(";
             .
         .else
-            if      key == KEYBOARD.KEYS.BKSPACE    ; buf = $[:-1];
-            .elif   key == KEYBOARD.KEYS.AC         ; buf = "";
+            if      key == KEYBOARD.KEYS.BKSPACE
+                if pos > 0
+                    buf = $[:pos-1] + $[pos:]
+                    pos -= 1
+                .else
+                    buf = $[1:]
+                .
+            .elif   key == KEYBOARD.KEYS.AC
+                buf = ""
+                pos = 0
+            .elif   key == KEYBOARD.KEYS.LEFT
+                if pos > 0
+                    pos -= 1
+                .else
+                    pos = #buf
+                .
+            .elif   key == KEYBOARD.KEYS.RIGHT
+                if pos < #buf
+                    pos += 1
+                .else
+                    pos = 0
+                .
             .elif   key == KEYBOARD.KEYS.HOME       ; break;
             .elif   key == KEYBOARD.KEYS.EXE        ; get = True;
-            .elif   key == KEYBOARD.KEYS.N0         ; buf += "0";
-            .elif   key == KEYBOARD.KEYS.N1         ; buf += "1";
-            .elif   key == KEYBOARD.KEYS.N2         ; buf += "2";
-            .elif   key == KEYBOARD.KEYS.N3         ; buf += "3";
-            .elif   key == KEYBOARD.KEYS.N4         ; buf += "4";
-            .elif   key == KEYBOARD.KEYS.N5         ; buf += "5";
-            .elif   key == KEYBOARD.KEYS.N6         ; buf += "6";
-            .elif   key == KEYBOARD.KEYS.N7         ; buf += "7";
-            .elif   key == KEYBOARD.KEYS.N8         ; buf += "8";
-            .elif   key == KEYBOARD.KEYS.N9         ; buf += "9";
-            .elif   key == KEYBOARD.KEYS.DOT        ; buf += ".";
-            .elif   key == KEYBOARD.KEYS.ADD        ; buf += "+";
-            .elif   key == KEYBOARD.KEYS.SUBTRACT   ; buf += "-";
-            .elif   key == KEYBOARD.KEYS.MULTIPLY   ; buf += "*";
-            .elif   key == KEYBOARD.KEYS.DIVIDE     ; buf += "/";
-            .elif   key == KEYBOARD.KEYS.POWER      ; buf += "^";
-            .elif   key == KEYBOARD.KEYS.POWER_2    ; buf += "^2";
-            .elif   key == KEYBOARD.KEYS.POWER_10   ; buf += "*10^";
-            .elif   key == KEYBOARD.KEYS.SIN        ; buf += "\x01";
-            .elif   key == KEYBOARD.KEYS.COS        ; buf += "\x03";
-            .elif   key == KEYBOARD.KEYS.TAN        ; buf += "\x05";
-            .elif   key == KEYBOARD.KEYS.LPAREN     ; buf += "(";
-            .elif   key == KEYBOARD.KEYS.RPAREN     ; buf += ")";
+            .elif   key == KEYBOARD.KEYS.N0         ; chr = "0";
+            .elif   key == KEYBOARD.KEYS.N1         ; chr = "1";
+            .elif   key == KEYBOARD.KEYS.N2         ; chr = "2";
+            .elif   key == KEYBOARD.KEYS.N3         ; chr = "3";
+            .elif   key == KEYBOARD.KEYS.N4         ; chr = "4";
+            .elif   key == KEYBOARD.KEYS.N5         ; chr = "5";
+            .elif   key == KEYBOARD.KEYS.N6         ; chr = "6";
+            .elif   key == KEYBOARD.KEYS.N7         ; chr = "7";
+            .elif   key == KEYBOARD.KEYS.N8         ; chr = "8";
+            .elif   key == KEYBOARD.KEYS.N9         ; chr = "9";
+            .elif   key == KEYBOARD.KEYS.DOT        ; chr = ".";
+            .elif   key == KEYBOARD.KEYS.ADD        ; chr = "+";
+            .elif   key == KEYBOARD.KEYS.SUBTRACT   ; chr = "-";
+            .elif   key == KEYBOARD.KEYS.MULTIPLY   ; chr = "*";
+            .elif   key == KEYBOARD.KEYS.DIVIDE     ; chr = "/";
+            .elif   key == KEYBOARD.KEYS.POWER      ; chr = "^";
+            .elif   key == KEYBOARD.KEYS.POWER_2    ; chr = "^2";
+            .elif   key == KEYBOARD.KEYS.POWER_10   ; chr = "*10^(";
+            .elif   key == KEYBOARD.KEYS.SIN        ; chr = "\x01(";
+            .elif   key == KEYBOARD.KEYS.COS        ; chr = "\x03(";
+            .elif   key == KEYBOARD.KEYS.TAN        ; chr = "\x05(";
+            .elif   key == KEYBOARD.KEYS.SQRT       ; chr = "\x07(";
+            .elif   key == KEYBOARD.KEYS.LPAREN     ; chr = "(";
+            .elif   key == KEYBOARD.KEYS.RPAREN     ; chr = ")";
             .
         .
+        if chr
+            buf = buf[:pos] + chr + buf[pos:]
+            pos += #chr
+        .
         buf .= replace("**", "^")
+        if pos < 0; pos = 0;.
     .
 .
