@@ -21,6 +21,18 @@ def empty
     <-l
 .
 
+def copy(l: list(list(int)))
+    c = [,]
+    for line -> l
+        lc = [,]
+        for block -> line
+            {lc}<-block
+        .
+        {c}<-lc
+    .
+    <-c
+.
+
 def is_line_empty(l: list(int))
     for block -> l
         if block; <-False;.
@@ -71,6 +83,15 @@ def collides(l: list(list(int)), p: list(tuple(int)))
     <-False
 .
 
+def overlaps(l1: list(list(int)), l2: list(list(int)))
+    for line at y -> l1
+        for block at x -> line
+            if block & l2[y][x]; <-True;.
+        .
+    .
+    <-False
+.
+
 def shift_left_if_possible(l: list(list(int)))
     if not is_column_empty(l, 0); <-False;.
     for y -> {->#l}
@@ -89,50 +110,61 @@ def shift_right_if_possible(l: list(list(int)))
     <-True
 .
 
-def rotate_clockwise_if_possible(l: list(list(int)), c: tuple(int, int), s: int)
-    if s == 1
-        === edges
-        p                 = l[c[1]-1][c[0]  ]
-        l[c[1]-1][c[0]  ] = l[c[1]  ][c[0]-1]
-        l[c[1]  ][c[0]-1] = l[c[1]+1][c[0]  ]
-        l[c[1]+1][c[0]  ] = l[c[1]  ][c[0]+1]
-        l[c[1]  ][c[0]+1] = p
+def rotate_clockwise_if_possible(l: list(list(int)), buf: list(list(int)), c: tuple(int, int), s: int)
+    temp = copy(l)
+    error = False
+    try
+        if s == 1
+            === edges
+            p                 = l[c[1]-1][c[0]  ]
+            l[c[1]-1][c[0]  ] = l[c[1]  ][c[0]-1]
+            l[c[1]  ][c[0]-1] = l[c[1]+1][c[0]  ]
+            l[c[1]+1][c[0]  ] = l[c[1]  ][c[0]+1]
+            l[c[1]  ][c[0]+1] = p
 
-        === corners
-        p                 = l[c[1]-1][c[0]+1]
-        l[c[1]-1][c[0]+1] = l[c[1]-1][c[0]-1]
-        l[c[1]-1][c[0]-1] = l[c[1]+1][c[0]-1]
-        l[c[1]+1][c[0]-1] = l[c[1]+1][c[0]+1]
-        l[c[1]+1][c[0]+1] = p
-    .elif s == 2
-        === center
-        p                 = l[c[1]-1][c[0]  ]
-        l[c[1]-1][c[0]  ] = l[c[1]-1][c[0]-1]
-        l[c[1]-1][c[0]-1] = l[c[1]  ][c[0]-1]
-        l[c[1]  ][c[0]-1] = l[c[1]  ][c[0]  ]
-        l[c[1]  ][c[0]  ] = p
+            === corners
+            p                 = l[c[1]-1][c[0]+1]
+            l[c[1]-1][c[0]+1] = l[c[1]-1][c[0]-1]
+            l[c[1]-1][c[0]-1] = l[c[1]+1][c[0]-1]
+            l[c[1]+1][c[0]-1] = l[c[1]+1][c[0]+1]
+            l[c[1]+1][c[0]+1] = p
+        .elif s == 2
+            === center
+            p                 = l[c[1]-1][c[0]  ]
+            l[c[1]-1][c[0]  ] = l[c[1]-1][c[0]-1]
+            l[c[1]-1][c[0]-1] = l[c[1]  ][c[0]-1]
+            l[c[1]  ][c[0]-1] = l[c[1]  ][c[0]  ]
+            l[c[1]  ][c[0]  ] = p
 
-        === corners
-        p                 = l[c[1]-2][c[0]+1]
-        l[c[1]-2][c[0]+1] = l[c[1]-2][c[0]-2]
-        l[c[1]-2][c[0]-2] = l[c[1]+1][c[0]-2]
-        l[c[1]+1][c[0]-2] = l[c[1]+1][c[0]+1]
-        l[c[1]+1][c[0]+1] = p
+            === corners
+            p                 = l[c[1]-2][c[0]+1]
+            l[c[1]-2][c[0]+1] = l[c[1]-2][c[0]-2]
+            l[c[1]-2][c[0]-2] = l[c[1]+1][c[0]-2]
+            l[c[1]+1][c[0]-2] = l[c[1]+1][c[0]+1]
+            l[c[1]+1][c[0]+1] = p
 
-        === corners - 1
-        p                 = l[c[1]-2][c[0]  ]
-        l[c[1]-2][c[0]  ] = l[c[1]-1][c[0]-2]
-        l[c[1]-1][c[0]-2] = l[c[1]+1][c[0]-1]
-        l[c[1]+1][c[0]-1] = l[c[1]  ][c[0]+1]
-        l[c[1]  ][c[0]+1] = p
+            === corners - 1
+            p                 = l[c[1]-2][c[0]  ]
+            l[c[1]-2][c[0]  ] = l[c[1]-1][c[0]-2]
+            l[c[1]-1][c[0]-2] = l[c[1]+1][c[0]-1]
+            l[c[1]+1][c[0]-1] = l[c[1]  ][c[0]+1]
+            l[c[1]  ][c[0]+1] = p
 
-        === corners - 2
-        p                 = l[c[1]-2][c[0]-1]
-        l[c[1]-2][c[0]-1] = l[c[1]  ][c[0]-2]
-        l[c[1]  ][c[0]-2] = l[c[1]+1][c[0]  ]
-        l[c[1]+1][c[0]  ] = l[c[1]-1][c[0]+1]
-        l[c[1]-1][c[0]+1] = p
+            === corners - 2
+            p                 = l[c[1]-2][c[0]-1]
+            l[c[1]-2][c[0]-1] = l[c[1]  ][c[0]-2]
+            l[c[1]  ][c[0]-2] = l[c[1]+1][c[0]  ]
+            l[c[1]+1][c[0]  ] = l[c[1]-1][c[0]+1]
+            l[c[1]-1][c[0]+1] = p
+        .
+    .catch IndexError
+        error = True
     .
+    if error or overlaps(l, buf)
+        === revert to backup
+        <-temp
+    .
+    <-l
 .
 
 def bitwise_or(target: list(list(int)), source: list(list(int)))
@@ -218,7 +250,7 @@ def main
             .
             curr = True
         .
-        if not frame % 1000
+        if not frame % 2
             if last_used_line(sel) and (not collides(buf, get_collision_points(sel)))
                 {sel:0}<-empty_line!
                 del sel[-1]
@@ -241,7 +273,7 @@ def main
                     center[0] += 1
                 .
             .elif key == KEYBOARD.KEYS.OK
-                rotate_clockwise_if_possible(sel, center, size)
+                sel = rotate_clockwise_if_possible(sel, buf, center, size)
             .elif key == KEYBOARD.KEYS.HOME
                 break
             .
