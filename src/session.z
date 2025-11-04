@@ -1,0 +1,43 @@
+use requests as rq
+
+class Session
+    /*
+        @.headers = [=]
+        @.cookies = [=]
+    .
+
+    def @request(method, url, **kwargs)
+        === merge headers
+        headers = @.headers.copy!
+        if "headers" in kwargs
+            headers.update(kwargs["headers"])
+            {kwargs:"headers"}->_
+        .
+
+        === add cookies to header
+        if @.cookies
+            cookie_header = "; ".join((k.."="..v for k, v -> @.cookies.items!))
+            headers["Cookie"] = cookie_header
+        .
+
+        === make the request
+        resp = rq.request(method, url, headers=headers, **kwargs)
+
+        === save cookies from response (if any)
+        set_cookie = resp.headers.get("Set-Cookie")
+        if set_cookie
+            parts = set_cookie.split(";")[0]
+            k, v = parts.split("=", 1)
+            @.cookies[k.strip!] = v.strip!
+        .
+        <-resp
+    .
+
+    def @get(url, **kwargs); <-@.request("GET", url, **kwargs);.
+    def @post(url, **kwargs); <-@.request("POST", url, **kwargs);.
+
+    def @close
+        @.headers.clear!
+        @.cookies.clear!
+    .
+.
