@@ -74,6 +74,8 @@ try
             if c >= 0
                 run_app(apps.all[c])
             .
+        .elif key == KEYBOARD.KEYS.TOOLS
+            ui.ask("TYPING TEST")
         .
     .
 .catch DebugInterrupt = e
