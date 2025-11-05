@@ -2,6 +2,7 @@ use * from cwio
 use * from cwio.const
 use MonoImage from cwio.screen
 use math
+use ui
 
 name = "Calculator"
 
@@ -109,17 +110,21 @@ def main
         .
         toprint = toprint1 + toprint2
         screen.write(toprint..("=" if get else ""), 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-        screen.write("|", 11*#toprint1, 0, SCR.ENUM.PIXEL.DARK, font.classwiz_cw)
+        if not get; screen.write("|", 11*#toprint1, 0, SCR.ENUM.PIXEL.DARK, font.classwiz_cw);.
         if get
             get = False
             try
-                if      buf == "";      ans = "0";
-                .elif   buf == "1+1";   ans = "3";
-                .elif   buf == "6+7";   ans = "67";
-                .elif   buf == "9+10";  ans = "21";
-                .elif   buf == "9/11";  ans = "2001";
-                .elif   buf == "80085"; ans = "analysis mode";
-                .elif   buf == "71421"; ans = "changed mode"
+                if      buf == "";          ans = "0";
+                .elif   buf == "1+1";       ans = "3";
+                .elif   buf == "6+7";       ans = "67";
+                .elif   buf == "9+10";      ans = "21";
+                .elif   buf == "9/11";      ans = "2001";
+                .elif   buf == "80085";     ans = "analysis mode";
+                .elif   buf == "71421";     ans = "please no";
+                .elif   buf == "puro";      ans = "Grooh!";
+                .elif   buf == "34";        ans = "shallow waters";
+                .elif   buf == "nig";       ans = "nigeria";
+                .elif   buf == "http";      ans = "200 OK";
                 .else
                     expr = buf
                     for k, v -> replaces.items!
@@ -143,10 +148,12 @@ def main
                 .
             .catch AttributeError
                 result = "invalid syntax"
+            .catch NameError
+                result = "invalid name"
             .
             <|"[EVAL] Result: \""..result.."\""
             screen.write(result, 0, SCR.HEIGHT-14, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-            if result == "changed mode"
+            if result == "Grooh!"
                 screen.image(res.img.changed, SCR.WIDTH-33, SCR.HEIGHT-32, SCR.ENUM.PIXEL.BLACK)
             .
         .
@@ -191,6 +198,8 @@ def main
                 .else
                     pos = 0
                 .
+            .elif   key == KEYBOARD.KEYS.FORMAT
+                chr = ui.ask("Insert text to insert")
             .elif   key == KEYBOARD.KEYS.HOME       ; break;
             .elif   key == KEYBOARD.KEYS.EXE        ; get = True;
             .elif   key == KEYBOARD.KEYS.N0         ; chr = "0";
