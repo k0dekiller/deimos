@@ -76,6 +76,9 @@ class func
     @reprover("\u221A")
     def sqrt(a: int | float); <-math.sqrt(a);.
 .
+class var
+    ans = 0
+.
 
 replaces = [
     "\x01" = ["sin",        "func.sin"  ],
@@ -85,6 +88,7 @@ replaces = [
     "\x05" = ["tan",        "func.tan"  ],
     "\x06" = ["tan\uE011",  "func.atan" ],
     "\x07" = ["\u221A",     "func.sqrt" ],
+    "\x08" = ["Ans",        "var.ans"   ],
     "^"    = ["^",          "**"        ]
 ]
 
@@ -93,7 +97,6 @@ def main
     pos = 0
     get = False
     shift = False
-    ans = 0
     while True
         screen.clear!
         toprint1 = buf[:pos]
@@ -124,6 +127,7 @@ def main
                     .
                     <|"[EVAL] Parsing \""..expr.."\""
                     ans = eval(expr)
+                    var.ans = ans
                 .
                 result = ans as str
             .catch [SyntaxError, ZeroDivisionError] = e
@@ -213,6 +217,7 @@ def main
             .elif   key == KEYBOARD.KEYS.SQRT       ; chr = "\x07()"; mov--;
             .elif   key == KEYBOARD.KEYS.LPAREN     ; chr = "()"; mov--;
             .elif   key == KEYBOARD.KEYS.RPAREN     ; chr = ")";
+            .elif   key == KEYBOARD.KEYS.ANS        ; chr = "\x08";
             .
         .
         if chr
