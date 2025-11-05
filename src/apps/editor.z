@@ -7,5 +7,4 @@ name = "File Editor"
 
 def main
     path = ask("/")
-    if 
 .
