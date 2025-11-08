@@ -1,14 +1,14 @@
 use os
 
-def isfile(path: str) -> bool
+def isfile(path: str): bool
     <-os.stat(path)[0] & 0x8000
 .
 
-def isdir(path: str) -> bool
+def isdir(path: str): bool
     <-os.stat(path)[0] & 0x4000
 .
 
-def exists(path: str) -> bool
+def exists(path: str): bool
     try; os.stat(path)  ; <-True;
     .catch OSError      ; <-False;
     .
