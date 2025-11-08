@@ -1,11 +1,11 @@
 use os
 
 def isfile(path: str): bool
-    <-os.stat(path)[0] & 0x8000
+    <-(True if os.stat(path)[0] & 0x8000 else False)
 .
 
 def isdir(path: str): bool
-    <-os.stat(path)[0] & 0x4000
+    <-(True if os.stat(path)[0] & 0x4000 else False)
 .
 
 def exists(path: str): bool
