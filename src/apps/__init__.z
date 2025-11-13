@@ -2,6 +2,7 @@ use .axios
 use .calculator
 use .editor
 use .tetris
+use .viewer
 use .wifi
 
 all = [
@@ -9,5 +10,6 @@ all = [
     calculator,
     editor,
     tetris,
+    viewer,
     wifi,
 ]

@@ -1,0 +1,10 @@
+use * from cwio
+use * from cwio.const
+use ui
+use os
+
+name = "Image Viewer"
+
+def main
+    
+.
