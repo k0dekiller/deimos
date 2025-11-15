@@ -15,14 +15,23 @@ def normalize(s: str, page: int)
     <-out
 .
 
-def printlines(s: str, p: int)
-    c = s[:p].count("\n")
-    o = #(s[:p].split("\n")[-1])
-    n = normalize(s, o // PAGE)
-    l = "\n".join(n.splitlines![:c+7])
-    screen.write(l, 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-    screen.write("|", o*4, c*8, SCR.ENUM.PIXEL.DARK, font.miniwi)
-    <-l
+def printlines(s: str, pos: int, oldpos: int, writeall: bool = True)
+    refresh = writeall
+
+    lines = s[:pos].count("\n")
+    oldlines = s[:oldpos].count("\n")
+    last = #(s[:pos].split("\n")[-1])
+    norm = normalize(s, last // PAGE)
+    out = "\n".join(norm.splitlines![lines:lines+7])
+
+    if lines != oldlines; refresh = True;.
+
+    if refresh; screen.clear!
+    .else; screen.rect(0, 0, SCR.WIDTH, 8, SCR.ENUM.PIXEL.WHITE)
+    .
+    screen.write((out if refresh else out.split("\n", 1)[0]), 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+    screen.write("|", last*4, 0, SCR.ENUM.PIXEL.DARK, font.miniwi)
+    <-last
 .
 
 def main
@@ -31,17 +40,27 @@ def main
     with open(file, "r") = f
         buf = f.read!
     .
+    oldpos = None
     pos = 0
 
+    refresh = True
     while True
-        screen.clear!
-        s = printlines(buf, pos)
+        last = printlines(buf, pos, oldpos, writeall=refresh)
+        refresh = False
         screen.apply!
         while keyboard.pressed_any!;;.
         key = keyboard.get_next!
+        char = None
+        oldpos = pos
         if    key == KB.KEYS.HOME       ; break;
         .elif key == KB.KEYS.LEFT       ; pos -= (1 if pos > 0 else 0);
-        .elif key == KB.KEYS.RIGHT      ; pos += (1 if pos < #s else 0);
+        .elif key == KB.KEYS.RIGHT      ; pos += (1 if pos < #buf else 0);
+        .elif key == KB.KEYS.FORMAT     ; char = ui.ask("Insert text")
+        .
+        if char
+            refresh = True
+            buf = $[:pos] + char + $[pos:]
+            pos += #char
         .
     .
 .
