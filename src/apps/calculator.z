@@ -130,11 +130,8 @@ def main
                 .elif   buf == "6+7";       ans = "67";
                 .elif   buf == "9+10";      ans = "21";
                 .elif   buf == "9/11";      ans = "2001";
-                .elif   buf == "80085";     ans = "analysis mode";
-                .elif   buf == "71421";     ans = "please no";
                 .elif   buf == "puro";      ans = "Grooh!";
                 .elif   buf == "34";        ans = "shallow waters";
-                .elif   buf == "nig";       ans = "nigeria";
                 .elif   buf == "http";      ans = "200 OK";
                 .else
                     expr = buf
