@@ -6,7 +6,7 @@ class SCR
             HEADER  = 0b000_0010
             BUFFER  = 0b000_0100
             FLIP_X  = 0b001_0000
-            ===     = 0b010_0000 UNKNOWN
+            FLIP_Y  = 0b010_0000
             COLOR   = 0b100_0000
         .
         class CONTRAST
