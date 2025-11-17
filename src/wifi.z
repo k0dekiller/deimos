@@ -2,13 +2,18 @@ use * from cwio
 use * from cwio.const
 use choose from ui
 use os
-use network
-use WLAN from network
-use urequests
 use time
 
-network.hostname("0xCA510_")
-wlan = WLAN(network.STA_IF)
+support = False
+
+try
+    use network
+    use WLAN from network
+    support = True
+.catch ImportError
+    network = None
+    WLAN = None
+.
 
 statuses = [
      0  = "IDLE",
@@ -19,73 +24,90 @@ statuses = [
      3  = "GOT_IP"
 ]
 
-def connect(w: WLAN, ssid: str, psw: str | None): bool
-    w.connect(ssid, psw)
-
-    <|"[WIFI] Connecting to \""..ssid.."\""
-    screen.clear!
-    screen.write("Connecting to \""..ssid.."\"...\n\nNOTE: This operation will automatically time out\nafter 15 seconds if the AP doesn't reply in that\ntime frame.", 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-    screen.apply!
-    
-    start = time.ticks_ms!
-    while not w.isconnected!
-        s = w.status!
-
-        if s in [-2, -3, -4,]
-            <|"[WIFI] Error: "..statuses[s]
-            screen.clear!
-            screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-            screen.write(statuses[s].."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-            screen.apply!
-            keyboard.wait!
-            <-False
-        .
-
-        if time.ticks_diff(time.ticks_ms!, start) > 15 * 1000
-            <|"[WIFI] Timed out after 15 seconds"
-            screen.clear!
-            screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-            screen.write("Timed out after 15 seconds".."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-            screen.apply!
-            keyboard.wait!
-            <-False
-        .
-
-        time.sleep(1)
-    .
-    <|"[WIFI] Connected: "..w.ifconfig! as str
-    screen.clear!
-    screen.write("Successfully connected!\nIP: "..w.ifconfig![0] as str.."\n\nPress [ANY] to continue...", 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-    screen.apply!
-    keyboard.wait!
-    <-True
+if support
+    network.hostname("0xCA510_")
+    wlan = WLAN(network.STA_IF)
+.else
+    wlan = None
 .
 
-def choose_connect
-    wlan.active(True)
-    === wlan.config(mac=b"\xDE\xAD\xC0\xDE\x00\x00")
-    while True
-        c = choose(["Saved"])
-        if c == 0
-            if not "wifi.txt" in os.listdir("/conf")
-                with open("/conf/wifi.txt", "x") = _;;.
+if support
+    def connect(w: WLAN, ssid: str, psw: str | None): bool
+        w.connect(ssid, psw)
+
+        <|"[WIFI] Connecting to \""..ssid.."\""
+        screen.clear!
+        screen.write("Connecting to \""..ssid.."\"...\n\nNOTE: This operation will automatically time out\nafter 15 seconds if the AP doesn't reply in that\ntime frame.", 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+        screen.apply!
+        
+        start = time.ticks_ms!
+        while not w.isconnected!
+            s = w.status!
+
+            if s in [-2, -3, -4,]
+                <|"[WIFI] Error: "..statuses[s]
+                screen.clear!
+                screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+                screen.write(statuses[s].."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+                screen.apply!
+                keyboard.wait!
+                <-False
             .
-            with open("/conf/wifi.txt", "r") = f
-                wifis = f.read!.replace("\r\n", "\n").strip("\n").split("\n")
+
+            if time.ticks_diff(time.ticks_ms!, start) > 15 * 1000
+                <|"[WIFI] Timed out after 15 seconds"
+                screen.clear!
+                screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+                screen.write("Timed out after 15 seconds".."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+                screen.apply!
+                keyboard.wait!
+                <-False
             .
-            opts = [,]
-            for wifi -> wifis
-                if wifi == ""; next;.
-                {opts}<-wifi.split("//", 1)[0]
+
+            time.sleep(1)
+        .
+        <|"[WIFI] Connected: "..w.ifconfig! as str
+        screen.clear!
+        screen.write("Successfully connected!\nIP: "..w.ifconfig![0] as str.."\n\nPress [ANY] to continue...", 0, 0, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+        screen.apply!
+        keyboard.wait!
+        <-True
+    .
+.else
+    def connect(w, ssid: str, psw: str | None): bool
+        <-False
+    .
+.
+
+if support
+    def choose_connect
+        wlan.active(True)
+        === wlan.config(mac=b"\xDE\xAD\xC0\xDE\x00\x00")
+        while True
+            c = choose(["Saved"])
+            if c == 0
+                if not "wifi.txt" in os.listdir("/conf")
+                    with open("/conf/wifi.txt", "x") = _;;.
+                .
+                with open("/conf/wifi.txt", "r") = f
+                    wifis = f.read!.replace("\r\n", "\n").strip("\n").split("\n")
+                .
+                opts = [,]
+                for wifi -> wifis
+                    if wifi == ""; next;.
+                    {opts}<-wifi.split("//", 1)[0]
+                .
+                c = choose(opts)
+                if c >= 0
+                    wifi = wifis[c].split("//", 1)
+                    ssid, psw = wifi[0], (wifi[1] if #wifi > 1 else None)
+                    if connect(wlan, ssid, psw); break;.
+                .
+            .elif c == -1
+                break
             .
-            c = choose(opts)
-            if c >= 0
-                wifi = wifis[c].split("//", 1)
-                ssid, psw = wifi[0], (wifi[1] if #wifi > 1 else None)
-                if connect(wlan, ssid, psw); break;.
-            .
-        .elif c == -1
-            break
         .
     .
+.else
+    def choose_connect;;.
 .
