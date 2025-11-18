@@ -1,5 +1,8 @@
-use socket
-use ssl
+use support as wifi_support from wifi
+if wifi_support
+    use socket
+    use ssl
+.
 use tar
 use garbage
 use os
@@ -7,7 +10,7 @@ use gc
 
 class INFO
     NAME = "official"
-    VER = "1.0.0"
+    VER = "1.1.0"
 .
 
 class OFW

@@ -1,5 +1,8 @@
-use socket
-use ssl
+use support as wifi_support from wifi
+if wifi_support
+    use socket
+    use ssl
+.
 use garbage
 
 class Session
