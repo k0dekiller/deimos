@@ -66,7 +66,7 @@ try
         screen.apply!
         key = keyboard.get_next!
         if key == KB.KEYS.SETTINGS
-            c = choose(["Update from OFW repo", "Power", "Debug"])
+            c = choose(["Update from OFW repo", "Power", "Debug",])
             if c == 0
                 if wifi.support
                     if (not wlan.active!) or (not wlan.isconnected!); wifi.choose_connect!;.
@@ -92,7 +92,7 @@ try
                     keyboard.wait!
                 .
             .elif c == 1
-                c = choose(["Reset environment", "Reboot"])
+                c = choose(["Reset environment", "Reboot",])
                 if c == 0
                     machine.soft_reset!
                 .elif c == 1
