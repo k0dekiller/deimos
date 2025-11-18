@@ -2,8 +2,10 @@ use .calc
 use * from .const
 use .screen
 use .keyboard
+use sleep_ms from time
 
 def init
     calc.init!
+    sleep_ms(15)
     calc.connect!
 .
