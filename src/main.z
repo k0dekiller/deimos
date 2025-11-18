@@ -46,10 +46,7 @@ def protected_run(func)
         <-func!
     .catch loader.Error;
     .catch Exception = e
-        screen.clear!
-        screen.write(e?.__name__, 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-        screen.write(e as str, 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-        screen.apply!
+        ui.notify(e?.__name__, e as str, wait=-)
         raise e
     .
 .
@@ -66,42 +63,51 @@ try
         screen.apply!
         key = keyboard.get_next!
         if key == KB.KEYS.SETTINGS
-            c = choose(["Update from OFW repo", "Power", "Debug",])
+            c = choose(["Update from OFW repo", "WiFi", "Power", "Debug",])
             if c == 0
                 if wifi.support
                     if wifi.choose_connect!
-                        screen.clear!
-                        screen.write("Updating...", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                        screen.write("OS will be restarted automatically after the\nupdate.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                        screen.apply!
+                        ui.notify(
+                            "Updating...",
+                            "OS will be restarted automatically after the\nupdate.",
+                            wait=-
+                        )
                         protected_run(update.download)
                         machine.reset!
                     .else
-                        screen.clear!
-                        screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                        screen.write("A stable Internet connection is required to\nperform updates.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                        screen.apply!
-                        keyboard.wait!
+                        ui.notify(
+                            "Connection error",
+                            "A stable Internet connection is required to\nperform updates."
+                        )
                     .
                 .else
-                    screen.clear!
-                    screen.write("No WiFi support", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                    screen.write("WiFi support is required to perform updates.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                    screen.apply!
-                    keyboard.wait!
+                    ui.notify(
+                        "No WiFi support",
+                        "WiFi support is required to perform updates."
+                    )
                 .
             .elif c == 1
+                if wifi.support
+                    wifi.choose_connect!
+                .else
+                    ui.notify(
+                        "No WiFi support",
+                        "WiFi support is required to connect to a\nnetwork."
+                    )
+                .
+            .elif c == 2
                 c = choose(["Reset environment", "Reboot",])
                 if c == 0
                     machine.soft_reset!
                 .elif c == 1
                     machine.reset!
                 .
-            .elif c == 2
-                screen.clear!
-                screen.write("Debug mode", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                screen.write("Control has been redirected to USB", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                screen.apply!
+            .elif c == 3
+                ui.notify(
+                    "Debug mode",
+                    "Control has been redirected to USB",
+                    wait=-
+                )
                 raise DebugInterrupt("Returning to REPL")
             .
         .elif key == KB.KEYS.HOME
@@ -109,8 +115,6 @@ try
             if c >= 0
                 run_app(apps[c][0])
             .
-        .elif key == KB.KEYS.TOOLS
-            ui.choose_file!
         .
     .
 .catch DebugInterrupt = e

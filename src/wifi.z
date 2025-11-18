@@ -1,6 +1,6 @@
 use * from cwio
 use * from cwio.const
-use choose from ui
+use ui
 use os
 use time
 
@@ -46,21 +46,19 @@ if support
 
             if s in [-2, -3, -4,]
                 <|"[WIFI] Error: "..statuses[s]
-                screen.clear!
-                screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                screen.write(statuses[s].."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                screen.apply!
-                keyboard.wait!
+                ui.notify(
+                    "Connection error",
+                    statuses[s].."\n\nPress [ANY] to continue..."
+                )
                 <-False
             .
 
             if time.ticks_diff(time.ticks_ms!, start) > 15 * 1000
                 <|"[WIFI] Timed out after 15 seconds"
-                screen.clear!
-                screen.write("Connection error", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-                screen.write("Timed out after 15 seconds".."\n\nPress [ANY] to continue...", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-                screen.apply!
-                keyboard.wait!
+                ui.notify(
+                    "Connection error",
+                    "Timed out after 15 seconds".."\n\nPress [ANY] to continue..."
+                )
                 <-False
             .
 
@@ -84,7 +82,7 @@ if support
         wlan.active(True)
         === wlan.config(mac=b"\xDE\xAD\xC0\xDE\x00\x00")
         while True
-            c = choose(["Saved"])
+            c = ui.choose(["Saved"])
             if c == 0
                 if not "wifi.txt" in os.listdir("/conf")
                     with open("/conf/wifi.txt", "x") = _;;.
@@ -97,7 +95,7 @@ if support
                     if wifi == ""; next;.
                     {opts}<-wifi.split("//", 1)[0]
                 .
-                c = choose(opts)
+                c = ui.choose(opts)
                 if c >= 0
                     wifi = wifis[c].split("//", 1)
                     ssid, psw = wifi[0], (wifi[1] if #wifi > 1 else None)

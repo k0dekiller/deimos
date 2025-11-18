@@ -1,6 +1,8 @@
 use * from cwio
 use * from cwio.const
-use fs as _fs
+use os
+use fs
+use ui
 use support as wifi_support from wifi
 
 class Error from Exception;;.
@@ -11,8 +13,8 @@ class UnsupportedError from Error;;.
 class EntryPointError from Error;;.
 
 apps = [,]
-for path -> _fs.os.listdir("/apps")
-    if path.endswith(".py") and (not path.startswith("_")) and _fs.isfile("/apps/"+path)
+for path -> os.listdir("/apps")
+    if path.endswith(".py") and (not path.startswith("_")) and fs.isfile("/apps/"+path)
         name = path[:-3]
         module = getattr(__import__("apps."+name), name)
         lib = hasattr(module, "lib")
@@ -31,22 +33,20 @@ def get(name: str)
 def require(name: str)
     try; <-get(name)
     .catch NameError;;.
-    screen.clear!
-    screen.write("Missing dependency", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-    screen.write("Please install \""+name+"\" to continue", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-    screen.apply!
-    keyboard.wait!
+    ui.notify(
+        "Missing dependency",
+        "Please install \""+name+"\" to continue"
+    )
     raise RequireError(name)
 .
 
 def run(name: str)
     app = require(name)
     if (not wifi_support) and ("wifi" in getattr(app, "requires", [,]))
-        screen.clear!
-        screen.write("Unsupported app", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-        screen.write("This app requires WiFi, which isn't supported\nby this device.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
-        screen.apply!
-        keyboard.wait!
+        ui.notify(
+            "Unsupported app",
+            "This app requires WiFi, which isn't supported\nby this device."
+        )
         raise UnsupportedError("wifi")
     .
     appmain = getattr(app, "main", None)
@@ -54,15 +54,16 @@ def run(name: str)
         <-appmain!
     .
     lib = hasattr(app, "lib")
-    screen.clear!
     if lib
-        screen.write("Passive library app", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-        screen.write("This library is only meant to be used by other\napps.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+        ui.notify(
+            "Library app",
+            "This library is only meant to be used by other\napps."
+        )
     .else
-        screen.write("Missing entry point", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
-        screen.write("This application cannot be launched directly.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+        ui.notify(
+            "Missing entry point",
+            "This application cannot be launched directly."
+        )
     .
-    screen.apply!
-    keyboard.wait!
     raise EntryPointError(lib)
 .

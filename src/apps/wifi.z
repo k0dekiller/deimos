@@ -1,8 +1,0 @@
-use wifi
-
-name = "WiFi"
-requires = ["wifi",]
-
-def main
-    <-wifi.choose_connect!
-.

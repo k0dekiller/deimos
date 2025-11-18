@@ -2,6 +2,14 @@ use * from cwio
 use os
 use fs
 
+def notify(title: str, msg: str, wait: bool = True)
+    screen.clear!
+    screen.write(title, 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+    screen.write(msg, 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
+    screen.apply!
+    if wait; keyboard.wait!;.
+.
+
 def choose(items: list(str), msg: str | None = None): int
     refresh = True
     x = 0
