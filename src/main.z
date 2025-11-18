@@ -69,8 +69,7 @@ try
             c = choose(["Update from OFW repo", "Power", "Debug",])
             if c == 0
                 if wifi.support
-                    if (not wlan.active!) or (not wlan.isconnected!); wifi.choose_connect!;.
-                    if wlan.active! and wlan.isconnected!
+                    if wifi.choose_connect!
                         screen.clear!
                         screen.write("Updating...", 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
                         screen.write("OS will be restarted automatically after the\nupdate.", 0, 14, SCR.ENUM.PIXEL.BLACK, font.miniwi)
