@@ -74,6 +74,7 @@ try
                             wait=-
                         )
                         protected_run(update.download)
+                        <|"[FWUP] Rebooting device"
                         machine.reset!
                     .else
                         ui.notify(

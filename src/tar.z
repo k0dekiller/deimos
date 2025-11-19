@@ -40,7 +40,7 @@ def extract(file: str, dest: str = ".")
                 fs.mkdirs(dirpath)
             .
 
-            <|"Extracting "+name
+            <|"[UTAR] Extracting "+name
 
             if filetype == b"5"
                 === directory
