@@ -3,33 +3,6 @@ use * from .const
 use Font from .font
 use utime
 
-class Buffer
-    /* items
-        @.items = bytearray(items)
-    .
-    /getitem index
-        try
-            <-@.items[index]
-        .catch IndexError
-            <-0x00
-        .
-    .
-    /setitem index, value
-        try
-            @.items[index] = value
-        .catch IndexError;;.
-    .
-    /len
-        <-#@.items
-    .
-    /repr
-        <-@.items as repr
-    .
-    /str
-        <-@.items as str
-    .
-.
-
 def on: None
     calc.write(SCR.POWER, SCR.ENUM.POWER.RESET)
     utime.sleep_ms(2)
@@ -44,11 +17,15 @@ def init: None
 .
 
 empty = [
-    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as Buffer,
-    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as Buffer,
+    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as bytearray,
+    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as bytearray,
 ]
 oldbuf = None
 buf = [empty[0][0:], empty[1][0:],]
+
+def in_bounds(x: int, y: int)
+    <-(x between 0, SCR.WIDTH-1) and (y between 0, SCR.HEIGHT-1)
+.
 
 def clear
     for i -> {->SCR.SIZE-SCR.HEADER*SCR.WIDTH_B}
@@ -58,14 +35,17 @@ def clear
 .
 
 def get_group(x: int, y: int, pl: int)
+    if not in_bounds(x, y); <-0x00;.
     <-buf[pl][y * SCR.WIDTH_B + x // 8]
 .
 
 def set_group(x: int, y: int, pl: int, v: int)
+    if not in_bounds(x, y); <-;.
     buf[pl][y * SCR.WIDTH_B + x // 8] = v
 .
 
 def paint_group(x: int, y: int, pl: int, b: int, m: bool)
+    if not in_bounds(x, y); <-;.
     i = y * SCR.WIDTH_B + x // 8
     if m;  buf[pl][i] |= b
     .else; buf[pl][i] &=~b
@@ -73,16 +53,19 @@ def paint_group(x: int, y: int, pl: int, b: int, m: bool)
 .
 
 def set_raw(x: int, y: int, pl: int, v: bool)
+    if not in_bounds(x, y); <-;.
     ox = x % 8
     paint_group(x, y, pl, 1 << (7 - ox), v)
 .
 
 def set(x: int, y: int, v: int): None
+    if not in_bounds(x, y); <-;.
     set_raw(x, y, 0, v & SCR.ENUM.PIXEL.BRIGHT)
     set_raw(x, y, 1, v & SCR.ENUM.PIXEL.DARK)
 .
 
 def set_byte(x: int, y: int, v: int): None
+    if not in_bounds(x, y); <-;.
     set_group(x, y, 0, (v & SCR.ENUM.PIXEL.BRIGHT) * 0xFF)
     set_group(x, y, 1, ((v & SCR.ENUM.PIXEL.DARK) >> 1) * 0xFF)
 .
