@@ -6,6 +6,16 @@ use ui
 
 name = "Calculator"
 
+def clamp(min: int, max: int, n: int)
+    if (n between min, max)
+        <-n
+    .elif n < min
+        <-min
+    .else
+        <-max
+    .
+.
+
 def reprover(s: str | None = None)
     class Function
         /* @func
@@ -44,6 +54,9 @@ class func
 .
 class var
     ans = 0
+    x = 0
+    y = 0
+    z = 0
 .
 
 replaces = [
@@ -57,6 +70,9 @@ replaces = [
     "\uF007" = ["Ans",        "var.ans"   ],
     "\uF008" = ["ask",        "func.ask"  ],
     "\uF009" = ["sel",        "func.sel"  ],
+    "\uF010" = ["\U0001D499", "var.x"     ],
+    "\uF011" = ["\U0001D49A", "var.y"     ],
+    "\uF012" = ["\U0001D49B", "var.z"     ],
     "^"      = ["^",          "**"        ]
 ]
 
@@ -84,7 +100,6 @@ def main
         screen.write(toprint..("=" if get else ""), 0, 0, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
         if not get; screen.write("|", 11*#(toprint1.split("\n")[-1]), 14*toprint1.count("\n"), SCR.ENUM.PIXEL.DARK, font.classwiz_cw);.
         if get
-            get = False
             try
                 if      buf == "";          ans = "0";
                 .elif   buf == "1+1";       ans = "3";
@@ -98,8 +113,28 @@ def main
                         expr .= replace(k, v[1])
                     .
                     <|"[EVAL] Parsing \""..expr.."\""
-                    ans = eval(expr)
-                    var.ans = ans
+                    ans = ""
+                    if get == "plot/y"
+                        cx = SCR.WIDTH//2
+                        cy = SCR.HEIGHT//2
+                        screen.clear!
+                        screen.line_v(cx, 0, SCR.HEIGHT, SCR.ENUM.PIXEL.DARK)
+                        screen.line_h(0, cy, SCR.WIDTH, SCR.ENUM.PIXEL.DARK)
+                        for x to SCR.WIDTH
+                            var.x = x-cx
+                            var.y = eval(expr)
+                            y = math.floor(var.y)
+                            if y > 0
+                                screen.line_v(x, cy-y, y, SCR.ENUM.PIXEL.BRIGHT)
+                            .else
+                                screen.line_v(x, cy+1, -y-1, SCR.ENUM.PIXEL.BRIGHT)
+                            .
+                            screen.set(x, math.floor(cy-var.y), SCR.ENUM.PIXEL.BLACK)
+                        .
+                    .else
+                        ans = eval(expr)
+                        var.ans = ans
+                    .
                 .
                 result = ans as str
             .catch [SyntaxError, ZeroDivisionError] = e
@@ -120,6 +155,7 @@ def main
             .
             <|"[EVAL] Result: \""..result.."\""
             screen.write(result, 0, SCR.HEIGHT-14, SCR.ENUM.PIXEL.BLACK, font.classwiz_cw)
+            get = False
         .
         screen.apply!
         while keyboard.pressed_any!;;.
@@ -145,11 +181,19 @@ def main
             .elif   key == KB.KEYS.TAN        ; chr = "\uF005()"; mov--
             .elif   key == KB.KEYS.ADD        ; chr = "\"\""; mov--
             .elif   key == KB.KEYS.ANS        ; chr = "\uF008()"; mov-=1
+            .elif   key == KB.KEYS.N0         ; chr = "\uF010"
+            .elif   key == KB.KEYS.DOT        ; chr = "\uF011"
+            .elif   key == KB.KEYS.POWER_10   ; chr = "\uF012"
             .
         .elif tools and not shift
             tools = False
             shift = False
-            if      key == KB.KEYS.LPAREN     ; chr = "[]"; mov--
+            if      key == KB.KEYS.EXE
+                c = ui.choose(["Plot y"])
+                if c == 0
+                    get = "plot/y"
+                .
+            .elif   key == KB.KEYS.LPAREN     ; chr = "[]"; mov--
             .elif   key == KB.KEYS.RPAREN     ; chr = "]"
             .elif   key == KB.KEYS.MULTIPLY   ; chr = "!"
             .elif   key == KB.KEYS.DOT        ; chr = ":"
@@ -214,6 +258,7 @@ def main
             .elif   key == KB.KEYS.LPAREN     ; chr = "()"; mov--
             .elif   key == KB.KEYS.RPAREN     ; chr = ")"
             .elif   key == KB.KEYS.ANS        ; chr = "\uF007"
+            .elif   key == KB.KEYS.X          ; chr = "\uF010"
             .
         .
         if chr
