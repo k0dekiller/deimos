@@ -188,7 +188,7 @@ def main
         .elif tools and not shift
             tools = False
             shift = False
-            .elif   key == KB.KEYS.LPAREN     ; chr = "[]"; mov--
+            if      key == KB.KEYS.LPAREN     ; chr = "[]"; mov--
             .elif   key == KB.KEYS.RPAREN     ; chr = "]"
             .elif   key == KB.KEYS.MULTIPLY   ; chr = "!"
             .elif   key == KB.KEYS.DOT        ; chr = ":"
@@ -231,7 +231,6 @@ def main
                 if c == 0
                     get = "plot/y"
                 .
-            .
             .elif   key == KB.KEYS.HOME       ; break
             .elif   key == KB.KEYS.EXE        ; get = True
             .elif   key == KB.KEYS.N0         ; chr = "0"
