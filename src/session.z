@@ -6,7 +6,7 @@ if wifi_support
 use garbage
 
 class Session
-    /* @host, @port
+    /* @host, @port, @agent
         @.s = None
         @.headers = [=]
         @.cookies = [=]
@@ -35,7 +35,7 @@ class Session
         headers = [
             "Host" = @.host,
             "Connection" = "keep-alive",
-            "User-Agent" = "Deimos/1.0"
+            "User-Agent" = ("Deimos/1.0" if not @.agent else @.agent)
         ]
         headers.update(@.headers)
         if "headers" in kwargs
