@@ -188,11 +188,6 @@ def main
         .elif tools and not shift
             tools = False
             shift = False
-            if      key == KB.KEYS.EXE
-                c = ui.choose(["Plot y"])
-                if c == 0
-                    get = "plot/y"
-                .
             .elif   key == KB.KEYS.LPAREN     ; chr = "[]"; mov--
             .elif   key == KB.KEYS.RPAREN     ; chr = "]"
             .elif   key == KB.KEYS.MULTIPLY   ; chr = "!"
@@ -231,6 +226,12 @@ def main
                 .
             .elif   key == KB.KEYS.FORMAT
                 chr = ui.ask("Insert text")
+            .elif   key == KB.KEYS.CATALOG
+                c = ui.choose(["Plot y"])
+                if c == 0
+                    get = "plot/y"
+                .
+            .
             .elif   key == KB.KEYS.HOME       ; break
             .elif   key == KB.KEYS.EXE        ; get = True
             .elif   key == KB.KEYS.N0         ; chr = "0"
