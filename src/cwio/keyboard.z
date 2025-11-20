@@ -1,4 +1,5 @@
 use .calc
+use .screen
 use * from .const
 
 def init: None
@@ -18,12 +19,30 @@ def pressed(code: int): bool
     <-not (calc.read(KB.IN) & (0b000_0001 << y))
 .
 
-def wait_for(code: int): None
+def wait_for(code: int, show_icon: bool = True): None
+    if pressed(code); <-;.
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.BLACK)
+        screen.apply_icons!
+    .
     while not pressed(code);;.
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.WHITE)
+        screen.apply_icons!
+    .
 .
 
-def wait: None
+def wait(show_icon: bool = True): None
+    if pressed_any!;;.
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.BLACK)
+        screen.apply_icons!
+    .
     while not pressed_any!;;.
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.WHITE)
+        screen.apply_icons!
+    .
 .
 
 def get: int
@@ -33,10 +52,29 @@ def get: int
     <- -1
 .
 
-def get_next: int
-    wait!
-    for key -> [0b000_000<->0b111_111]
-        if pressed(key); <-key;.
+def get_next(show_icon: bool = True): int
+    if pressed_any!
+        for key -> [0b000_000<->0b111_111]
+            if pressed(key)
+                <-key
+            .
+        .
     .
-    <- -1
+    k = -1
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.BLACK)
+        screen.apply_icons!
+    .
+    wait(show_icon=-)
+    for key -> [0b000_000<->0b111_111]
+        if pressed(key)
+            k = key
+            break
+        .
+    .
+    if show_icon
+        screen.set_icon(SCR.ICON.PAUSE, SCR.COLOR.WHITE)
+        screen.apply_icons!
+    .
+    <- k
 .

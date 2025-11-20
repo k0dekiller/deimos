@@ -33,6 +33,26 @@ class SCR
         DARK    = 0b10
         BLACK   = 0b11
     .
+    class ICON
+        SHIFT   = 0x01
+        MATHIO  = 0x03
+        DEG     = 0x04
+        RAD     = 0x05
+        GRA     = 0x06
+        FIX     = 0x07
+        SCI     = 0x08
+        ENG     = 0x0A
+        COMP    = 0x0B
+        POLAR   = 0x0C
+        ARROW   = 0x0D
+        OK      = 0x0E
+        LEFT    = 0x10
+        DOWN    = 0x11
+        UP      = 0x12
+        RIGHT   = 0x13
+        PAUSE   = 0x15
+        POWER   = 0x16
+    .
     RANGE       = 0xF030
     MODE        = 0xF031
     CONTRAST    = 0xF032

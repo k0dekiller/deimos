@@ -17,34 +17,48 @@ def init: None
 .
 
 empty = [
-    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as bytearray,
-    (b"\x00" * (SCR.SIZE-SCR.HEADER*SCR.WIDTH_B)) as bytearray,
+    (b"\x00" * SCR.SIZE) as bytearray,
+    (b"\x00" * SCR.SIZE) as bytearray,
 ]
 oldbuf = None
 buf = [empty[0][0:], empty[1][0:],]
 
-def in_bounds(x: int, y: int)
+def in_bounds(x: int, y: int): bool
     <-(x between 0, SCR.WIDTH-1) and (y between 0, SCR.HEIGHT-1)
 .
 
-def clear
+def clear: None
+    for i -> {->SCR.SIZE}
+        buf[0][i] = 0x00
+        buf[1][i] = 0x00
+    .
+.
+
+def clear_screen: None
     for i -> {->SCR.SIZE-SCR.HEADER*SCR.WIDTH_B}
         buf[0][i] = 0x00
         buf[1][i] = 0x00
     .
 .
 
-def get_group(x: int, y: int, pl: int)
+def clear_icons: None
+    for i -> {->SCR.HEADER*SCR.WIDTH_B}
+        buf[0][SCR.TRUE_HEIGHT-SCR.HEADER*SCR.WIDTH_B+i] = 0x00
+        buf[1][SCR.TRUE_HEIGHT-SCR.HEADER*SCR.WIDTH_B+i] = 0x00
+    .
+.
+
+def get_group(x: int, y: int, pl: int): int
     if not in_bounds(x, y); <-0x00;.
     <-buf[pl][y * SCR.WIDTH_B + x // 8]
 .
 
-def set_group(x: int, y: int, pl: int, v: int)
+def set_group(x: int, y: int, pl: int, v: int): None
     if not in_bounds(x, y); <-;.
     buf[pl][y * SCR.WIDTH_B + x // 8] = v
 .
 
-def paint_group(x: int, y: int, pl: int, b: int, m: bool)
+def paint_group(x: int, y: int, pl: int, b: int, m: bool): None
     if not in_bounds(x, y); <-;.
     i = y * SCR.WIDTH_B + x // 8
     if m;  buf[pl][i] |= b
@@ -52,7 +66,7 @@ def paint_group(x: int, y: int, pl: int, b: int, m: bool)
     .
 .
 
-def set_raw(x: int, y: int, pl: int, v: bool)
+def set_raw(x: int, y: int, pl: int, v: bool): None
     if not in_bounds(x, y); <-;.
     ox = x % 8
     paint_group(x, y, pl, 1 << (7 - ox), v)
@@ -70,11 +84,28 @@ def set_byte(x: int, y: int, v: int): None
     set_group(x, y, 1, ((v & SCR.COLOR.DARK) >> 1) * 0xFF)
 .
 
+def set_icon(icon: int, v: int): None
+    if not (icon between 0x00, 0x17); <-;.
+    buf[0][SCR.SIZE-SCR.HEADER*SCR.WIDTH_B+icon] = (v & SCR.COLOR.BRIGHT) * 0xFF
+    buf[1][SCR.SIZE-SCR.HEADER*SCR.WIDTH_B+icon] = ((v & SCR.COLOR.DARK) >> 1) * 0xFF
+.
+
 def apply: None
     global oldbuf
     global buf
     for rp at p -> [SCR.ENUM.SELECT.PLANE0, SCR.ENUM.SELECT.PLANE1,]
         calc.write(SCR.SELECT, rp)
+        for y -> {->SCR.HEADER}
+            for x -> {->SCR.WIDTH_B}
+                i = (SCR.HEIGHT+y) * SCR.WIDTH_B + x
+                if (not oldbuf) or (oldbuf[p][i] != buf[p][i])
+                    calc.write(
+                        SCR.BUFFER + y * SCR.TRUE_WIDTH_B + x,
+                        buf[p][i]
+                    )
+                .
+            .
+        .
         for y -> {->SCR.HEIGHT}
             for x -> {->SCR.WIDTH_B}
                 i = y * SCR.WIDTH_B + x
@@ -91,6 +122,22 @@ def apply: None
         buf[0][0:],
         buf[1][0:],
     ]
+.
+
+def apply_icons: None
+    global buf
+    for rp at p -> [SCR.ENUM.SELECT.PLANE0, SCR.ENUM.SELECT.PLANE1,]
+        calc.write(SCR.SELECT, rp)
+        for y -> {->SCR.HEADER}
+            for x -> {->SCR.WIDTH_B}
+                i = (SCR.HEIGHT+y) * SCR.WIDTH_B + x
+                calc.write(
+                    SCR.BUFFER + y * SCR.TRUE_WIDTH_B + x,
+                    buf[p][i]
+                )
+            .
+        .
+    .
 .
 
 def line_h(x: int, y: int, l: int, v: int)
