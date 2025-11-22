@@ -12,31 +12,51 @@ class ADDR
     HISTORY = 0x93F8
 .
 
+def get_mode: tuple(int, int)
+    <-[calc.read(ADDR.MODE), calc.read(ADDR.SUBMODE)]
+.
+
+def set_mode(mode: int | None, submode: int | None): None
+    if mode; calc.write(ADDR.MODE, mode);.
+    if submode; calc.write(ADDR.SUBMODE, submode);.
+.
+
+def get_history: bytes
+    history = bytearray!
+    for i -> {->400}
+        history.append(calc.read(ADDR.HISTORY+i))
+    .
+    <-history as bytes
+.
+
+def set_history(history: bytes): bool
+    if #history != 400; <-False;.
+    for i -> {->400}
+        calc.write(ADDR.HISTORY+i, history[i])
+    .
+.
+
 def main
     while True
         c = ui.choose(["Set mode byte", "Set submode byte", "Inject history",])
         if c == 0
-            v = (calc.read(ADDR.MODE) as hex as str)[2:].upper!
+            v = (get_history![0] as hex as str)[2:].upper!
             v = eval(ui.ask("New value:", "0x"+("0"*(2-#v))+$))
             if isinstance(v, int)
-                calc.write(ADDR.MODE, v & 0xFF)
+                set_mode(v, None)
             .
         .elif c == 1
-            v = (calc.read(ADDR.SUBMODE) as hex as str)[2:].upper!
+            v = (get_history![1] as hex as str)[2:].upper!
             v = eval(ui.ask("New value:", "0x"+("0"*(2-#v))+$))
             if isinstance(v, int)
-                calc.write(ADDR.SUBMODE, v & 0xFF)
+                set_mode(None, v)
             .
         .elif c == 2
             file = ui.choose_file!
             if file != -1
                 with open(file, "rb") = f
                     data = f.read!
-                    if #data == 400
-                        for i -> {->400}
-                            calc.write(ADDR.HISTORY+i, data[i])
-                        .
-                    .else
+                    if not set_history(data)
                         ui.notify(
                             "Malformed file",
                             "The file you chose is not a valid history dump.\nHistory dumps are generally 400B bin files."
