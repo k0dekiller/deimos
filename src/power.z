@@ -1,0 +1,13 @@
+use * from cwio
+use * from cwio.const
+use machine
+
+def deepsleep
+    screen.clear!
+    screen.set_icon(SCR.ICON.POWER, SCR.COLOR.BLACK)
+    screen.apply!
+    <|"[EASE] Waiting for calculator to detach"
+    while calc.raw.pread(0x00);;.
+    <|"[PWRM] Deep sleep"
+    machine.deepsleep!
+.
