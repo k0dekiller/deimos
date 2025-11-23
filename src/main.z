@@ -64,25 +64,67 @@ try
         screen.apply!
         key = keyboard.get_next!
         if key == KB.KEY.SETTINGS
-            c = choose(["Update from OFW repo", "WiFi", "Power", "Debug",])
+            c = choose(["Updates", "WiFi", "Power", "Debug",])
             if c == 0
                 if wifi.support
-                    if wifi.choose_connect!
-                        ui.notify(
-                            "Updating",
-                            "OS will be restarted automatically after the\nupdate.",
-                            res.ui.info,
-                            wait=-
-                        )
-                        protected_run(update.download)
-                        <|"[FWUP] Rebooting device"
-                        machine.reset!
-                    .else
-                        ui.notify(
-                            "No connection",
-                            "A stable Internet connection is required to\nperform updates.",
-                            res.ui.error
-                        )
+                    c = choose(["From OFW repo", "From custom repo"])
+                    if c >= 0
+                        if wifi.choose_connect!
+                            if c == 0
+                                ui.notify(
+                                    "Updating",
+                                    "OS will restart automatically after the update.",
+                                    res.ui.info,
+                                    wait=-
+                                )
+                                garbage.collect!
+                                if protected_run(update.download)
+                                    <|"[FWUP] Rebooting device"
+                                    machine.reset!
+                                .else
+                                    ui.notify(
+                                        "Update error",
+                                        "Something went wrong while downloading the\nupdate.",
+                                        res.ui.error
+                                    )
+                                .
+                            .elif c == 1
+                                repo = ui.ask("GitHub repo to fetch from:", update.OFW.REPO)
+                                if repo.count("/") == 1
+                                    ui.notify(
+                                        "Updating",
+                                        "OS will restart automatically after the update.",
+                                        res.ui.info,
+                                        wait=-
+                                    )
+                                    
+                                    garbage.collect!
+                                    === lambda macro
+                                    if protected_run((update.download(repo))<-!)
+                                        <|"[FWUP] Rebooting device"
+                                        machine.reset!
+                                    .else
+                                        ui.notify(
+                                            "Update error",
+                                            "Something went wrong while downloading the\nupdate. Are you sure the repository you\nspecified exists?",
+                                            res.ui.error
+                                        )
+                                    .
+                                .else
+                                    ui.notify(
+                                        "Invalid repo",
+                                        "https://github.com/"+repo+"\nis not a valid GitHub repo.",
+                                        res.ui.error
+                                    )
+                                .
+                            .
+                        .else
+                            ui.notify(
+                                "No connection",
+                                "A stable Internet connection is required to\nperform updates.",
+                                res.ui.error
+                            )
+                        .
                     .
                 .else
                     ui.notify(
