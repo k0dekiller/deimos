@@ -16,7 +16,7 @@ class INFO
 
 class OFW
     DOMAIN = "github.com"
-    REPO = "mgismissing/deimos"
+    REPO = "k0dekiller/deimos"
 .
 
 def get_stream(host: bytes, path: bytes)
