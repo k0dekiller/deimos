@@ -15,9 +15,17 @@ ZINK := python -m zlang --lang py --pretty --verbose
 
 all: build
 
+micropython:
+	git clone https://github.com/micropython/micropython
+
+install:
+	python -m pip install zlang
+
+init: micropython install
 
 clean:
 	@rm -rf "$(BIN)"
+	@rm -rf "$(SRC)/cwio/build"
 
 setup: clean
 	@find $(SRC) -type d -exec sh -c '\
@@ -26,22 +34,21 @@ setup: clean
 		mkdir -p "$(BIN)/$$rel"; \
 	' _ {} \;
 
-
 build: setup $(BIN)
-	@find "$(SRC)" -type f ! -name "*.z" -exec sh -c '\
+	make -C "$(SRC)/cwio"
+	@rm -rf "$(SRC)/cwio/build"
+	@find "$(SRC)" -type f ! -name "*.z" ! -name "*.c" ! -name "Makefile" -exec sh -c '\
 		src="$$1"; \
 		rel="$${src#$(SRC)/}"; \
 		cp "$$src" "$(BIN)/$$rel"; \
 	' _ {} \;
+	@find "$(SRC)" -type f -name "*.mpy" -delete
 ifneq ($(Z_FILES),)
 	@$(ZINK) $(Z_PAIRS)
 endif
 
 $(BIN):
 	@mkdir -p "$(BIN)"
-
-install:
-	python -m pip install zlang
 
 flash:
 	mpremote cp -r bin/* :/
