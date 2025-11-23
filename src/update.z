@@ -24,19 +24,29 @@ def get_stream(host: bytes, path: bytes)
     addr = socket.getaddrinfo(host, 443)[0][-1]
     s = socket.socket!
     s.connect(addr)
+    garbage.collect!
     s = ssl.wrap_socket($)
 
     s.write(b"GET "+path+b" HTTP/1.0\r\nHost: "+host+b"\r\n\r\n")
 
     loc = None
+    found = True
     while True
+        garbage.collect!
         line = s.readline!
         if line == b"\r\n" or line == b""; break;.
         if line.startswith(b"Location: "); loc = line.replace(b"Location: ", b"").rstrip(b"\r\n");.
+        if line.startswith(b"HTTP/")
+            status = line.split(b" ")[1]
+            if status != b"200"; found = False;.
+        .
+        del line
     .
 
     if not loc
-        <-s
+        if found; <-s
+        .else; <-False
+        .
     .
     s.close!
     loch = loc.split(b"/", 3)[2]
@@ -44,8 +54,8 @@ def get_stream(host: bytes, path: bytes)
     <-get_stream(loch, loc)
 .
 
-def download(ver: str = "latest")
-    url = bytes("/"+OFW.REPO+"/releases", "utf-8")
+def download(repo: str | None = None, ver: str = "latest")
+    url = bytes("/"+(repo if repo else OFW.REPO)+"/releases", "utf-8")
     if ver == "latest"
         url += b"/latest/download"
     .else
@@ -53,6 +63,9 @@ def download(ver: str = "latest")
     .
     url += b"/deimos.tar"
     r = get_stream(bytes(OFW.DOMAIN, "utf-8"), url)
+    if not r
+        <-False
+    .
     with open("/deimos.tar", "wb") = f
         i = 0
         while True
@@ -70,4 +83,5 @@ def download(ver: str = "latest")
     <|"[FWUP] Extracting tar into /"
     tar.extract("/deimos.tar", "/")
     os.remove("/deimos.tar")
+    <-True
 .
