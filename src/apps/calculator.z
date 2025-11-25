@@ -124,6 +124,7 @@ def main
                         parts = expr.count(";")+1
                         for x to SCR.WIDTH
                             for part -> expr.split(";")
+                                if part == ""; next;.
                                 var.x = x-cx
                                 var.y = eval(part)
                                 y = math.floor(var.y)
