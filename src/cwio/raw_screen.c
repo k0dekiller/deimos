@@ -82,7 +82,7 @@ static mp_obj_t apply(size_t n_args, const mp_obj_t *args) {
         }
     }
     for (int y = start_y; y <= end_y; y++) {
-        for (int x = start_x; x < end_x; x++) {
+        for (int x = start_x; x <= end_x; x++) {
             int i = y * const_width_b + x;
             if (oldbuf_none || (oldbuf[i] != buf[i])) {
                 WRITE(
