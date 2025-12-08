@@ -4,7 +4,7 @@ mkdir -p tmp/bw
 
 OUT="$(dirname $1)/$(basename $1 .mp4).raw"
 
-ffmpeg -i $1 -vf "fps=1" tmp/raw/%06d.png
+ffmpeg -i $1 -vf "fps=2" -t 60 tmp/raw/%06d.png
 
 rm -f $OUT
 touch $OUT
