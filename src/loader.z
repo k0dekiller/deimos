@@ -57,7 +57,7 @@ def run(name: str)
     if "cwii" in requires and INFO.TARGET != "cwii"
         ui.notify(
             "Unsupported app",
-            "This app targets CWII devices, while you\ncurrently have a "+INFO.TARGET.upper!+" one.",
+            "This app targets CWII devices, while you\ncurrently have a "+INFO.TARGET.upper!+".",
             res.ui.error
         )
         raise UnsupportedError("cwii")
@@ -65,7 +65,7 @@ def run(name: str)
     if "cwi" in requires and INFO.TARGET != "cwi"
         ui.notify(
             "Unsupported app",
-            "This app targets CWI devices, while you\ncurrently have a "+INFO.TARGET.upper!+" one.",
+            "This app targets CWI devices, while you\ncurrently have a "+INFO.TARGET.upper!+".",
             res.ui.error
         )
         raise UnsupportedError("cwi")
