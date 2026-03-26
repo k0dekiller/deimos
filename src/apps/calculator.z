@@ -153,6 +153,7 @@ def main
                 result = "syntax error"
                 if      err.startswith("function takes");;
                 .elif   err.startswith("unsupported types");;
+                .elif   err.endswith("object isn't callable");;
                 .else
                     raise e
                 .
