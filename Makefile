@@ -15,9 +15,6 @@ ZINK := python -m zlang --lang py --pretty --verbose
 
 all: build
 
-micropython:
-	git clone https://github.com/micropython/micropython
-
 zlang:
 	python -m pip install zlang
 
@@ -27,13 +24,17 @@ pyelftools:
 mpremote:
 	python -m pip install mpremote
 
+cwio:
+	git submodule update --init
+
 install: zlang pyelftools mpremote
 
 init: micropython install
 
 clean:
 	@rm -rf "$(BIN)"
-	@rm -rf "$(SRC)/cwio/build"
+	@rm -rf "$(SRC)/cwio/build-armv6m"
+	@find "$(SRC)" -maxdepth 2 -type f -name "*.mpy" -delete
 
 setup: clean
 	@find $(SRC) -type d -exec sh -c '\
@@ -44,13 +45,12 @@ setup: clean
 
 build: setup $(BIN)
 	make -C "$(SRC)/cwio"
-	@rm -rf "$(SRC)/cwio/build"
+	@rm -rf "$(SRC)/cwio/build-armv6m"
 	@find "$(SRC)" -type f ! -name "*.z" ! -name "*.c" ! -name "*.png" ! -name "*.mp4" ! -name "Makefile" -exec sh -c '\
 		src="$$1"; \
 		rel="$${src#$(SRC)/}"; \
 		cp "$$src" "$(BIN)/$$rel"; \
 	' _ {} \;
-	@find "$(SRC)" -type f -name "*.mpy" -delete
 ifneq ($(Z_FILES),)
 	@$(ZINK) $(Z_PAIRS)
 endif
