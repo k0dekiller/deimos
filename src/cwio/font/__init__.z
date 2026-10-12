@@ -1,8 +1,0 @@
-use * from .font
-use Font    as classwiz_cw  from .classwiz_cw
-use Font    as miniwi       from .miniwi
-
-all = [
-    classwiz_cw,
-    miniwi,
-]
