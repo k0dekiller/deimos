@@ -8,7 +8,7 @@ Deimos implements many features that aren't normally present on cheap non-progra
 3. Integrated file editor to make Python projects on the go.
 
 # Hardware
-Currently, the API supports the CWII series and the CWI series through [itzmtt's port](https://github.com/itzmtt/deimosEX).
+Currently, the API supports the CWII series.
 CWII+ calculators (like the fx-9910CW) are already supported since they ship with the same hardware as their older CWII counterparts.
 
 # Other info
