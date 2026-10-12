@@ -1,3 +1,4 @@
 [submodule "src/cwio"]
 	path = src/cwio
 	url = https://github.com/k0dekiller/cwio
+	branch = emu
