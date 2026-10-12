@@ -1,6 +1,3 @@
-[submodule "cwio"]
-	path = cwio
-	url = https://github.com/k0dekiller/cwio
 [submodule "src/cwio"]
 	path = src/cwio
 	url = https://github.com/k0dekiller/cwio
