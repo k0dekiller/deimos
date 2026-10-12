@@ -18,16 +18,10 @@ all: build
 zlang:
 	python -m pip install zlang
 
-pyelftools:
-	python -m pip install pyelftools
-
-mpremote:
-	python -m pip install mpremote
-
 cwio:
 	git submodule update --init
 
-install: zlang pyelftools mpremote
+install: zlang
 
 init: micropython install
 
@@ -59,12 +53,9 @@ $(BIN):
 	@mkdir -p "$(BIN)"
 
 flash:
-	mpremote cp -r bin/* :/
 
 run: flash
-	mpremote reset
-	sleep 2
-	mpremote
+	python bin/main.py
 
 release:
 	mkdir -p $(DIST)
