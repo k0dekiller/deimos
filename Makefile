@@ -46,11 +46,14 @@ setup: clean
 build: setup $(BIN)
 	make -C "$(SRC)/cwio"
 	@rm -rf "$(SRC)/cwio/build-armv6m"
-	@find "$(SRC)" -type f ! -name "*.z" ! -name "*.c" ! -name "*.png" ! -name "*.mp4" ! -name "Makefile" -exec sh -c '\
-		src="$$1"; \
-		rel="$${src#$(SRC)/}"; \
-		cp "$$src" "$(BIN)/$$rel"; \
+	@find "$(SRC)" \
+		-type f ! -name "*.z" ! -name "*.c" ! -name "*.png" ! -name "*.mp4" ! -name "Makefile" \
+		-exec sh -c '\
+			src="$$1"; \
+			rel="$${src#$(SRC)/}"; \
+			cp "$$src" "$(BIN)/$$rel"; \
 	' _ {} \;
+	@rm -rf "$(BIN)/cwio/micropython"
 ifneq ($(Z_FILES),)
 	@$(ZINK) $(Z_PAIRS)
 endif
