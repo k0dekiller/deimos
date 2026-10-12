@@ -4,7 +4,7 @@ use ui
 
 lib = True
 name = "Sentinel"
-requires = ["cwii",]
+requires = ["target.cwii",]
 
 class ADDR
     MODE    = 0x91A1

@@ -46,30 +46,35 @@ def require(name: str)
 def run(name: str)
     app = require(name)
     requires = getattr(app, "requires", [,])
-    if (not wifi_support) and ("wifi" in requires)
-        ui.notify(
-            "Unsupported app",
-            "This app requires WiFi, which isn't supported\nby this device.",
-            res.ui.error
-        )
-        raise UnsupportedError("wifi")
+
+    === Compatibility with apps for <=1.6.0
+    for r at i -> requires
+        if r == "cwii"; r = "target.cwii";.
+        if r == "cwi";  r = "target.cwi";.
+        requires[i] = r
     .
-    if "cwii" in requires and INFO.TARGET != "cwii"
-        ui.notify(
-            "Unsupported app",
-            "This app targets CWII devices, while you\ncurrently have a "+INFO.TARGET.upper!+".",
-            res.ui.error
-        )
-        raise UnsupportedError("cwii")
+
+    for r -> requires
+        if r == "wifi" and not wifi_support
+            ui.notify(
+                "Unsupported app",
+                "This app requires WiFi, which isn't supported\nby this device.",
+                res.ui.error
+            )
+            raise UnsupportedError("wifi")
+        .elif r.startswith("target.")
+            target = r.split(".")[1]
+            if INFO.TARGET != target
+                ui.notify(
+                    "Unsupported app",
+                    "This app targets "+target+" devices.\nYou currently have "+INFO.TARGET+".",
+                    res.ui.error
+                )
+                raise UnsupportedError(target)
+            .
+        .
     .
-    if "cwi" in requires and INFO.TARGET != "cwi"
-        ui.notify(
-            "Unsupported app",
-            "This app targets CWI devices, while you\ncurrently have a "+INFO.TARGET.upper!+".",
-            res.ui.error
-        )
-        raise UnsupportedError("cwi")
-    .
+
     appmain = getattr(app, "main", None)
     if appmain
         <-appmain!
